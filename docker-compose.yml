@@ -1,0 +1,168 @@
+# CyberArmor URL Trust Gate — 15-minute self-serve demo.
+#
+# Runs entirely from prebuilt images (no source, no build step). The custom
+# service images are published to GitHub Container Registry from the private
+# CyberArmor repo; this compose only pulls and runs them.
+#
+#   Quick start:   ./install.sh
+#   Tear down:     ./uninstall.sh
+#
+# Services:
+#   postgres, redis, opa      — stock infra images
+#   detection, policy, audit,
+#   response, url-trust-gate  — prebuilt CyberArmor images (heuristic-only,
+#                               no ML model downloads — keeps the demo to 15m)
+#   poc-test-server           — serves the crafted attack pages in ./test-pages
+#
+# The gate's SSRF guard is deliberately allowlisted for poc-test-server only,
+# so the safe crawler can reach the local fixtures without opening egress.
+
+x-image-tag: &image_tag ${IMAGE_TAG:-latest}
+x-registry: &registry ghcr.io/aisecurefuture
+
+services:
+  opa:
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    image: openpolicyagent/opa:latest-static
+    command: ["run", "--server", "--addr=0.0.0.0:8181", "--log-level=info", "--log-format=json"]
+    ports: ["${HOST_BIND:-127.0.0.1}:${OPA_HOST_PORT:-8181}:8181"]
+    healthcheck:
+      test: ["CMD", "/opa", "eval", "--format", "raw", "data"]
+      interval: 10s
+      retries: 3
+    restart: unless-stopped
+
+  postgres:
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    cap_add: ["CHOWN", "FOWNER", "DAC_OVERRIDE", "SETGID", "SETUID"]
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cyberarmor}
+      POSTGRES_USER: ${POSTGRES_USER:-cyberarmor}
+      POSTGRES_DB: ${POSTGRES_DB:-cyberarmor}
+    ports: ["${HOST_BIND:-127.0.0.1}:${POSTGRES_HOST_PORT:-5432}:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cyberarmor"]
+      interval: 5s
+      retries: 5
+
+  redis:
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    cap_add: ["SETGID", "SETUID"]
+    image: redis:7-alpine
+    ports: ["${HOST_BIND:-127.0.0.1}:${REDIS_HOST_PORT:-6379}:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+
+  policy:
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    image: ghcr.io/aisecurefuture/cyberarmor-policy:${IMAGE_TAG:-latest}
+    env_file: [".env"]
+    environment:
+      OPA_URL: http://opa:8181
+      OPA_ENABLED: "true"
+      OPA_TIMEOUT_SECONDS: "5"
+    depends_on:
+      postgres: { condition: service_healthy }
+      opa: { condition: service_healthy }
+    ports: ["${HOST_BIND:-127.0.0.1}:${POLICY_HOST_PORT:-8001}:8001"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      retries: 3
+
+  detection:
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    cap_add: ["CHOWN", "FOWNER", "DAC_OVERRIDE", "SETGID", "SETUID"]
+    image: ghcr.io/aisecurefuture/cyberarmor-detection:${IMAGE_TAG:-latest}
+    env_file: [".env"]
+    environment:
+      # Heuristic-only: no HuggingFace downloads, no Ollama. The heuristic
+      # ensemble produces real verdicts and catches the demo fixtures —
+      # this is what keeps the PoC inside 15 minutes on a fresh box.
+      TRANSFORMERS_OFFLINE: "1"
+      HF_HUB_OFFLINE: "1"
+      OLLAMA_ENABLED: "false"
+    volumes:
+      - hf_models:/models
+    depends_on:
+      postgres: { condition: service_healthy }
+    ports: ["${HOST_BIND:-127.0.0.1}:8002:8002"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 10s
+      retries: 3
+
+  audit:
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    image: ghcr.io/aisecurefuture/cyberarmor-audit:${IMAGE_TAG:-latest}
+    env_file: [".env"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports: ["${HOST_BIND:-127.0.0.1}:${AUDIT_HOST_PORT:-8011}:8011"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8011/health')"]
+      interval: 10s
+      retries: 3
+
+  response:
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    image: ghcr.io/aisecurefuture/cyberarmor-response:${IMAGE_TAG:-latest}
+    env_file: [".env"]
+    # No proxy-agent in the gate demo — response runs standalone.
+    ports: ["${HOST_BIND:-127.0.0.1}:8003:8003"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
+      interval: 10s
+      retries: 3
+
+  url-trust-gate:
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    image: ghcr.io/aisecurefuture/cyberarmor-url-trust-gate:${IMAGE_TAG:-latest}
+    env_file: [".env"]
+    environment:
+      DETECTION_SERVICE_URL: "http://detection:8002"
+      POLICY_SERVICE_URL: "http://policy:8001"
+      RESPONSE_SERVICE_URL: "http://response:8003"
+      AUDIT_SERVICE_URL: "http://audit:8011"
+      # No detonation worker in the demo — the gate downgrades deep-mode
+      # requests to standard cleanly.
+      URL_TRUST_GATE_DETONATION_DEFAULT: "off"
+      # Allowlist ONLY the local test server through the SSRF guard so the
+      # safe crawler can fetch the demo fixtures. No other egress.
+      URL_TRUST_GATE_CRAWLER_SSRF_ALLOWLIST: "poc-test-server"
+      # Optional reputation feeds — leave empty to skip cleanly.
+      SAFE_BROWSING_API_KEY: "${SAFE_BROWSING_API_KEY:-}"
+    depends_on:
+      detection: { condition: service_healthy }
+      policy: { condition: service_healthy }
+    ports: ["${HOST_BIND:-127.0.0.1}:8014:8014"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8014/health')"]
+      interval: 10s
+      retries: 3
+
+  poc-test-server:
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    image: python:3.12-alpine
+    working_dir: /srv
+    command: ["python", "-m", "http.server", "8088", "--directory", "/srv"]
+    volumes:
+      - ./test-pages:/srv:ro
+
+volumes:
+  pgdata:
+  hf_models:

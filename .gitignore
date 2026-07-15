@@ -1,0 +1,6 @@
+# Generated at install time with real secrets — never commit.
+.env
+
+# OS / editor cruft
+.DS_Store
+*.swp
