@@ -21,8 +21,8 @@ The demo runs entirely from prebuilt images. **No source code, no build step.**
 ## Run it
 
 ```bash
-git clone https://github.com/aisecurefuture/cyberarmor-url-trust-gate-demo.git
-cd cyberarmor-url-trust-gate-demo
+git clone https://github.com/aisecurefuture/cyberarmor-trust-gate-demo.git
+cd cyberarmor-trust-gate-demo
 ./install.sh
 ```
 
