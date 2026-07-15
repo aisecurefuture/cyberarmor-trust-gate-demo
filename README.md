@@ -18,6 +18,12 @@ The demo runs entirely from prebuilt images. **No source code, no build step.**
 - ~2 GB RAM, a few GB disk
 - Outbound access to `ghcr.io` to pull images
 
+Runs on **macOS (Apple Silicon or Intel), Windows, and Linux**. The service
+images are `linux/amd64`; on Apple Silicon Macs they run automatically under
+Docker Desktop's built-in Rosetta emulation (enabled by default) — no setup
+needed. If you ever disabled it, re-enable **Settings → General → "Use Rosetta
+for x86/amd64 emulation."**
+
 ## Run it
 
 ```bash
