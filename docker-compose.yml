@@ -28,9 +28,17 @@ services:
     command: ["run", "--server", "--addr=0.0.0.0:8181", "--log-level=info", "--log-format=json"]
     ports: ["${HOST_BIND:-127.0.0.1}:${OPA_HOST_PORT:-8181}:8181"]
     healthcheck:
+      # `opa eval` is a standalone CLI invocation (doesn't hit the running
+      # server), so it's normally near-instant. The explicit timeout/
+      # start_period exist so a slow-pulling or resource-starved host
+      # (common on a fresh demo box) gets bounded retries instead of an
+      # indefinite "starting" state that install.sh's `--wait` would
+      # otherwise block on forever.
       test: ["CMD", "/opa", "eval", "--format", "raw", "data"]
-      interval: 10s
-      retries: 3
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
     restart: unless-stopped
 
   postgres:
@@ -76,8 +84,10 @@ services:
     ports: ["${HOST_BIND:-127.0.0.1}:${POLICY_HOST_PORT:-8001}:8001"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
-      interval: 10s
-      retries: 3
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
 
   detection:
     security_opt: ["no-new-privileges:true"]
@@ -100,8 +110,10 @@ services:
     ports: ["${HOST_BIND:-127.0.0.1}:8002:8002"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
-      interval: 10s
-      retries: 3
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 6
 
   audit:
     security_opt: ["no-new-privileges:true"]
@@ -115,8 +127,10 @@ services:
     ports: ["${HOST_BIND:-127.0.0.1}:${AUDIT_HOST_PORT:-8011}:8011"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8011/health')"]
-      interval: 10s
-      retries: 3
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
 
   response:
     security_opt: ["no-new-privileges:true"]
@@ -128,8 +142,10 @@ services:
     ports: ["${HOST_BIND:-127.0.0.1}:8003:8003"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health')"]
-      interval: 10s
-      retries: 3
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
 
   url-trust-gate:
     security_opt: ["no-new-privileges:true"]
@@ -156,8 +172,10 @@ services:
     ports: ["${HOST_BIND:-127.0.0.1}:8014:8014"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8014/health')"]
-      interval: 10s
-      retries: 3
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
 
   poc-test-server:
     security_opt: ["no-new-privileges:true"]

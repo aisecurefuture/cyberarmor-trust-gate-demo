@@ -75,8 +75,24 @@ ok "images pulled (elapsed: $(elapsed))"
 
 # ----------------------------------------------------------- bring up stack --
 step "Starting the URL Trust Gate stack"
-docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d
-ok "compose up returned (elapsed: $(elapsed))"
+# --wait blocks until every service's healthcheck passes (or --wait-timeout
+# elapses) and gives us a clean, bounded failure instead of docker compose
+# silently hanging forever. Without --wait, `up -d` still blocks internally
+# on each depends_on: condition: service_healthy edge with NO default
+# timeout — if any one healthcheck never flips to "healthy" (e.g. stuck in
+# "starting"), the command just sits there with no output and no bound.
+WAIT_TIMEOUT=180
+if ! docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --wait --wait-timeout "$WAIT_TIMEOUT"; then
+  fail "stack did not become healthy within ${WAIT_TIMEOUT}s (elapsed: $(elapsed))"
+  echo
+  echo "    Service status:"
+  docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null | sed 's/^/    /'
+  echo
+  fail "logs: docker compose -f $COMPOSE_FILE logs opa policy detection audit response url-trust-gate"
+  fail "if this keeps happening on a slow/shared host, try: docker compose -f $COMPOSE_FILE up -d --wait --wait-timeout 300"
+  exit 1
+fi
+ok "all services healthy (elapsed: $(elapsed))"
 
 # ------------------------------------------------------------- wait for health --
 step "Waiting for gate health endpoint"
