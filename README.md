@@ -18,6 +18,17 @@ The demo runs entirely from prebuilt images. **No source code, no build step.**
 - ~2 GB RAM, a few GB disk
 - Outbound access to `ghcr.io` to pull images
 
+This demo is pinned to image tag `2026.09.18-84a0a97`, published from the CyberArmor
+monorepo and stamped with the commit it was built from:
+
+```bash
+docker inspect ghcr.io/aisecurefuture/cyberarmor-url-trust-gate:2026.09.18-84a0a97 \
+  --format '{{index .Config.Labels "org.opencontainers.image.revision"}}'
+```
+
+To run a different build, set `IMAGE_TAG` in `.env`. Pin it rather than
+using `latest`, so the demo you rehearse is the demo you give.
+
 Runs on **macOS (Apple Silicon or Intel), Windows, and Linux**. The service
 images are `linux/amd64`; on Apple Silicon Macs they run automatically under
 Docker Desktop's built-in Rosetta emulation (enabled by default) — no setup
