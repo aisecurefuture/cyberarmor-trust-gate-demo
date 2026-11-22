@@ -133,6 +133,19 @@ the images, so a `git pull` updates them without a rebuild.
 decided by a narrower model or reported as not checked. No detection accuracy
 figure is published for this or any other CyberArmor.AI surface, by policy.
 
+## Point a browser at it
+
+The gate is a FastAPI service, so it serves its own interactive API
+documentation. Once the stack is up:
+
+| URL | What you get |
+|---|---|
+| <http://localhost:8014/docs> | Swagger UI — every endpoint, with a form. Expand `POST /evaluate`, click **Try it out**, paste a URL, **Execute**, and read the verdict and evidence in the response pane. |
+| <http://localhost:8014/redoc> | The same API as reference documentation |
+| <http://localhost:8014/openapi.json> | The OpenAPI spec, for generating a client |
+
+This is the quickest way to explore the gate without writing `curl` by hand.
+
 ## Try your own URL
 
 ```bash
@@ -163,6 +176,24 @@ record the gate writes to audit.
 Everything binds to `localhost` by default and runs in heuristic-only mode so
 the demo is fast and self-contained. This is a **demo configuration** — not a
 production deployment.
+
+## Where is the console?
+
+Not in here, on purpose. This repository is the **engine**, packaged so you can
+verify it yourself: prebuilt images, no source, no build step, and a runner that
+asserts each verdict and prints PASS/FAIL. Someone evaluating a security product
+should be able to satisfy themselves that the detection works before trusting
+any interface built on top of it.
+
+The product also ships operator-facing surfaces — a customer portal with the AI
+risk dashboard, action graph and evidence trail, an admin console for tenants,
+policy and API keys, and an MSP console for partners managing multiple tenants —
+along with endpoint agents, browser and IDE extensions, and Office add-ins. None
+of those are part of this demo, because none of them are needed to check whether
+the gate reaches the right verdict.
+
+If you would like to see them, <https://cyberarmor.ai> — we will walk you
+through a live tenant.
 
 ## Learn more
 
