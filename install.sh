@@ -121,8 +121,16 @@ fi
 step "Demo complete (total time: $(elapsed))"
 cat <<EOF
 
-  The URL Trust Gate evaluated four crafted attack pages and one benign page,
-  blocking the malicious ones and allowing the safe one.
+  The URL Trust Gate evaluated three crafted attack pages and one benign page,
+  enforcing on the hostile ones and allowing the safe one.
+
+  test-pages/ carries 16 fixtures in all. To submit the other 12 -- including
+  the card-PIN form, the off-domain brand page, the four hidden-sentence
+  canaries and two large ordinary storefronts -- run:
+
+    • ./run_url_trust_gate_demo.py --extended
+
+  That run says which fixtures this demo cannot enforce, and why.
 
   Try it yourself:
 

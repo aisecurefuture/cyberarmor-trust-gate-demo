@@ -3,15 +3,37 @@
 <head>
 <meta charset="utf-8">
 <title>CyberArmor URL Trust Gate — PoC Test Pages</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  .ca-disclaimer { background:#b30000; color:#fff; padding:12px 16px;
+    font-family:sans-serif; font-size:14px; font-weight:bold; text-align:center; }
+</style>
 </head>
 <body>
 <h1>CyberArmor URL Trust Gate — PoC Test Pages</h1>
 <p>This server hosts crafted pages that the PoC runner submits to the URL Trust Gate.</p>
+
+<!-- Wording here names file STRUCTURE, never technique, and this page carries
+     no rationale of its own: _clean_html_for_ml UNWRAPS comments, so anything
+     written here is scored like body text. The reasons are in
+     scripts/poc/README.md, "Why the index page wording matters", which is
+     the reference for any change to the lines below. -->
 <ul>
-  <li><a href="benign.html">benign.html</a> — normal article content (expected: <code>allow</code>)</li>
-  <li><a href="hidden-instruction.html">hidden-instruction.html</a> — promptware hidden in <code>display:none</code> block</li>
-  <li><a href="zero-width-injection.html">zero-width-injection.html</a> — instruction interleaved with zero-width characters</li>
-  <li><a href="credential-harvest.html">credential-harvest.html</a> — fake Microsoft sign-in page with password form</li>
+  <li><a href="benign.html">benign.html</a> — a plain article, no fixture content (expected: <code>allow</code>)</li>
+  <li><a href="hidden-instruction.html">hidden-instruction.html</a> — text inside a <code>display:none</code> element (expected: enforcement)</li>
+  <li><a href="zero-width-injection.html">zero-width-injection.html</a> — text carrying zero-width Unicode characters (expected: enforcement)</li>
+  <li><a href="credential-harvest.html">credential-harvest.html</a> — a sign-in form for the fictional brand Contoso (expected: enforcement)</li>
+  <li><a href="late-signin.html">late-signin.html</a> — a sign-in form for the fictional brand Contoso that a script builds after load (expected: enforcement at <code>deep</code>)</li>
+  <li><a href="late-hidden-text.html">late-hidden-text.html</a> — a <code>display:none</code> element that a script inserts after load (expected: enforcement at <code>deep</code>)</li>
+  <li><a href="download-on-load.html">download-on-load.html</a> — a page whose script starts a file download without a click (outcome recorded by measurement)</li>
+  <li><a href="redirect-to-signin.html">redirect-to-signin.html</a> — a page whose script moves the browser to <code>credential-harvest.html</code> (expected: enforcement at <code>deep</code>)</li>
+  <li><a href="weight-medium/index.html">weight-medium/</a> — a plain storefront for a fictional brand, about 0.66 MB across 24 files (expected: <code>allow</code>)</li>
+  <li><a href="weight-heavy/index.html">weight-heavy/</a> — the same storefront at about 5.6 MB across 67 files, with a worker and a framed panel (expected: <code>allow</code>)</li>
+  <li><a href="brand-impersonation.html">brand-impersonation.html</a> — a payment notice for the fictional brand Fabrikam, with a sign-in form (expected: <code>block</code>)</li>
+  <li><a href="canary-hidden-block.html">canary-hidden-block.html</a> — a gardening article with one sentence inside a <code>display:none</code> element (expected: removed by safe-fetch)</li>
+  <li><a href="canary-zero-width.html">canary-zero-width.html</a> — a field guide with one sentence written in invisible Unicode tag characters (expected: removed by safe-fetch)</li>
+  <li><a href="canary-html-comment.html">canary-html-comment.html</a> — a baking article with one sentence inside an HTML comment (expected: removed by safe-fetch)</li>
+  <li><a href="canary-white-on-white.html">canary-white-on-white.html</a> — a cycling guide with one sentence in white text on a white background (expected: removed by safe-fetch)</li>
 </ul>
 </body>
 </html>

