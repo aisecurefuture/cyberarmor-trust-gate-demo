@@ -1,0 +1,1 @@
+Contoso sample statement. This file is a CyberArmor test fixture and contains no real data.
