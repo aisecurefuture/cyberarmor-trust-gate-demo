@@ -78,7 +78,7 @@ services:
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
     platform: linux/amd64
-    image: "${REGISTRY:-ghcr.io/aisecurefuture}/cyberarmor-policy:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
+    image: "${REGISTRY:-ghcr.io/cyberarmor-ai}/cyberarmor-policy:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
     env_file: [".env"]
     environment:
       OPA_URL: http://opa:8181
@@ -100,7 +100,7 @@ services:
     cap_drop: ["ALL"]
     cap_add: ["CHOWN", "FOWNER", "DAC_OVERRIDE", "SETGID", "SETUID"]
     platform: linux/amd64
-    image: "${REGISTRY:-ghcr.io/aisecurefuture}/cyberarmor-detection:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
+    image: "${REGISTRY:-ghcr.io/cyberarmor-ai}/cyberarmor-detection:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
     env_file: [".env"]
     environment:
       # Heuristic-only: no HuggingFace downloads, no Ollama. The heuristic
@@ -125,7 +125,7 @@ services:
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
     platform: linux/amd64
-    image: "${REGISTRY:-ghcr.io/aisecurefuture}/cyberarmor-audit:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
+    image: "${REGISTRY:-ghcr.io/cyberarmor-ai}/cyberarmor-audit:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
     env_file: [".env"]
     depends_on:
       postgres: { condition: service_healthy }
@@ -142,7 +142,7 @@ services:
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
     platform: linux/amd64
-    image: "${REGISTRY:-ghcr.io/aisecurefuture}/cyberarmor-response:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
+    image: "${REGISTRY:-ghcr.io/cyberarmor-ai}/cyberarmor-response:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
     env_file: [".env"]
     # No proxy-agent in the gate demo — response runs standalone.
     ports: ["${HOST_BIND:-127.0.0.1}:8003:8003"]
@@ -157,7 +157,7 @@ services:
     security_opt: ["no-new-privileges:true"]
     cap_drop: ["ALL"]
     platform: linux/amd64
-    image: "${REGISTRY:-ghcr.io/aisecurefuture}/cyberarmor-url-trust-gate:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
+    image: "${REGISTRY:-ghcr.io/cyberarmor-ai}/cyberarmor-url-trust-gate:${IMAGE_TAG:?set IMAGE_TAG - run ./install.sh, or copy .env.example to .env}"
     env_file: [".env"]
     environment:
       DETECTION_SERVICE_URL: "http://detection:8002"

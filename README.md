@@ -18,13 +18,19 @@ The demo runs entirely from prebuilt images. **No source code, no build step.**
 - ~2 GB RAM, a few GB disk
 - Outbound access to `ghcr.io` to pull images
 
-This demo is pinned to image tag `2026.09.18-84a0a97`, published from the CyberArmor
-monorepo and stamped with the commit it was built from:
+This demo is pinned to image tag `2026.11.22-a50137e`, published from the
+CyberArmor monorepo and stamped with the commit it was built from:
 
 ```bash
-docker inspect ghcr.io/aisecurefuture/cyberarmor-url-trust-gate:2026.09.18-84a0a97 \
+docker inspect ghcr.io/cyberarmor-ai/cyberarmor-url-trust-gate:2026.11.22-a50137e \
   --format '{{index .Config.Labels "org.opencontainers.image.revision"}}'
+# -> a50137ef57de957f28b7d870cf80eea1f2389d2d
 ```
+
+All five images carry that stamp; the build verifies it and fails if any
+disagrees. **The registry moved on 2026-11-22** from `ghcr.io/aisecurefuture/`
+to `ghcr.io/cyberarmor-ai/` — see `.env.example` for why. A clone older than that keeps pulling
+the stale images until it pulls this change.
 
 `IMAGE_TAG` is **required** — `docker-compose.yml` reads `${IMAGE_TAG:?...}`,
 so compose refuses to start when it is unset instead of quietly following a
@@ -114,20 +120,9 @@ classifiers are **not in these images** and never have been. The heuristic
 ensemble produces real verdicts and catches the fixtures; it is not the full
 product.
 
-**The pinned images are from 2026-09-18 and three later fixes are missing.**
-`demo-images.yml` has published successfully exactly once, and cannot publish
-again until GitHub Actions are restored on the `aisecurefuture` account — no
-job has been scheduled there since 2026-10-04. Not in these images:
-
-| Fix | Merged | Effect on this demo |
-|---|---|---|
-| #1097 wildcard CORS across fourteen services | 2026-11-19 | five of them run here: `policy`, `detection`, `audit`, `response`, `url-trust-gate` |
-| #837 `secure.login.gov` blocked as credential phishing | 2026-11-07 | a real sign-in URL can come back as a block |
-| #836 a sign-in page blocked for a sentence Google requires it to carry | 2026-11-03 | as above |
-
-**So do not type a real sign-in URL into this build during a demo.** The
-crafted fixtures are unaffected: `test-pages/` is bind-mounted, not baked into
-the images, so a `git pull` updates them without a rebuild.
+**It runs no detonation worker.** `URL_TRUST_GATE_DETONATION_DEFAULT=off`, so
+the gate downgrades a deep request to standard and the three script-built
+fixtures cannot be enforced here. `--extended` says so on each of those lines.
 
 **The injection classifier is validated on English.** Other writing systems are
 decided by a narrower model or reported as not checked. No detection accuracy
